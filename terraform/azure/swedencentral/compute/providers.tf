@@ -1,14 +1,13 @@
 provider "azurerm" {
-  features {
-  }
+  features {}
 }
 
 module "basic" {
-  source = "../globals"
+  source          = "../globals"
   subscription-id = ""
 }
 
 module "network" {
-  source = "../networking"
+  source       = "../networking"
   my_public_ip = ""
 }

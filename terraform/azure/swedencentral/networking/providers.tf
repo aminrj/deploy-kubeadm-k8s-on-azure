@@ -3,7 +3,7 @@ provider "azurerm" {
 }
 
 module "basic" {
-  source = "../globals"
+  source          = "../globals"
   subscription-id = ""
 }
 

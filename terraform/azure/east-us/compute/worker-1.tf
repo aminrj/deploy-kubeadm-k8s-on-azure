@@ -2,7 +2,6 @@ resource "azurerm_network_interface" "nic-worker-1" {
   name                            = "${var.prefix-worker-1}-nic"
   location                        = "${module.basic.location}"
   resource_group_name             = "${module.network.resource-group-name}"
-  network_security_group_id       = module.network.network-nsg-id
 
   ip_configuration {
     name                          = "${var.prefix-worker-1}-ip-1"

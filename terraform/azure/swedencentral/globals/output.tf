@@ -7,5 +7,5 @@ output "location" {
 }
 
 output "subscription-id" {
-  value = ""
+  value = var.subscription-id
 }
