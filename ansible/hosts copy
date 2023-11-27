@@ -1,8 +1,13 @@
 [kubernetes-master-nodes]
 master-1
 
+[kubernetes-worker-nodes]
+worker-1
+worker-2
+
 [kubernetes:children]
 kubernetes-master-nodes
+kubernetes-worker-nodes
 
 [bastion]
 bastion.k8s

@@ -1,0 +1,50 @@
+resource "azurerm_network_interface" "nic-master-1" {
+  name                = "${var.prefix-master-1}-nic"
+  location            = module.basic.location
+  resource_group_name = module.network.resource-group-name
+
+  ip_configuration {
+    name                          = "${var.prefix-master-1}-ip-1"
+    subnet_id                     = module.network.network-subnet-id
+    private_ip_address_allocation = "Dynamic"
+  }
+}
+
+resource "azurerm_linux_virtual_machine" "vm-master-1" {
+  name                  = var.prefix-master-1
+  location              = module.basic.location
+  resource_group_name   = module.network.resource-group-name
+  network_interface_ids = [azurerm_network_interface.nic-master-1.id]
+  size                  = "Standard_B2s"
+  admin_username        = var.admin-user
+
+  source_image_reference {
+    publisher = "Canonical"
+    offer     = "UbuntuServer"
+    sku       = var.vm-sku
+    version   = "latest"
+  }
+
+  os_disk {
+    name                 = "${var.prefix-master-1}-os"
+    caching              = "ReadWrite"
+    storage_account_type = "Premium_LRS"
+  }
+
+  computer_name = "${var.prefix}-master-1"
+
+  # os_profile_linux_config {
+  #   disable_password_authentication = true
+
+  #   ssh_keys {
+  #     path     = "/home/${var.admin-user}/.ssh/authorized_keys"
+  #     key_data = file("~/.ssh/id_rsa_azure.pub")
+  #   }
+
+  # }
+
+  admin_ssh_key {
+    username   = var.admin-user
+    public_key = file("~/.ssh/id_rsa_azure.pub")
+  }
+}

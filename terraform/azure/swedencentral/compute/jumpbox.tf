@@ -1,20 +1,20 @@
-resource "azurerm_public_ip" "bastion_pip" {
-  name                = "${var.prefix}-bastion-pip"
+resource "azurerm_public_ip" "jumpbox_pip" {
+  name                = "${var.prefix}-jumpbox-pip"
   resource_group_name = module.network.resource-group-name
   location            = module.basic.location
   allocation_method   = "Static"
 }
 
-resource "azurerm_network_interface" "nic-bastion" {
-  name                = "${var.prefix}-bastion-nic"
+resource "azurerm_network_interface" "nic-jumpbox" {
+  name                = "${var.prefix}-jumpbox-nic"
   location            = module.basic.location
   resource_group_name = module.network.resource-group-name
 
   ip_configuration {
     name                          = "${var.prefix}-ip-1"
-    subnet_id                     = module.network.network-subnet-id
+    subnet_id                     = module.network.jumpbox-subnet-id
     private_ip_address_allocation = "Dynamic"
-    public_ip_address_id          = azurerm_public_ip.bastion_pip.id
+    public_ip_address_id          = azurerm_public_ip.jumpbox_pip.id
   }
 }
 
@@ -25,10 +25,10 @@ resource "tls_private_key" "bootstrap_private_key" {
 
 
 resource "azurerm_linux_virtual_machine" "vm" {
-  name                  = "${var.prefix}-bastion"
+  name                  = "${var.prefix}-jumpbox"
   location              = module.basic.location
   resource_group_name   = module.network.resource-group-name
-  network_interface_ids = ["${azurerm_network_interface.nic-bastion.id}"]
+  network_interface_ids = [azurerm_network_interface.nic-jumpbox.id]
   size                  = "Standard_B2s"
   admin_username        = var.admin-user
 
@@ -40,24 +40,27 @@ resource "azurerm_linux_virtual_machine" "vm" {
   }
 
   os_disk {
-    # name              = "${var.prefix}-bastion-os"
+    name    = "${var.prefix}-jumpbox-os"
     caching = "ReadWrite"
     # create_option     = "FromImage"
     storage_account_type = "Standard_LRS"
   }
 
-  # os_profile {
-  #   computer_name  = "${var.prefix}-bastion"
-  #   admin_username = var.admin-user
-  # }
+  computer_name = "${var.prefix}-jumpbox"
 
   admin_ssh_key {
     username   = var.admin-user
     public_key = file("~/.ssh/id_rsa_azure.pub")
   }
 
-  # os_profile_linux_config {
-  #   disable_password_authentication = true
-  # }
+  provisioner "local-exec" {
+    command = templatefile("linux-ssh-script.tpl", {
+      hostname     = self.public_ip_address,
+      user         = "${var.admin-user}",
+      identityfile = "~/.ssh/id_rsa_azure"
+    })
+    interpreter = ["bash", "-c"]
+
+  }
 
 }

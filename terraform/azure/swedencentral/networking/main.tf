@@ -10,8 +10,8 @@ resource "azurerm_virtual_network" "vnet" {
   resource_group_name = azurerm_resource_group.k8s-resources.name
 }
 
-resource "azurerm_subnet" "subnet" {
-  name                 = "${var.prefix}-network-subnet"
+resource "azurerm_subnet" "jumpbox-subnet" {
+  name                 = "${var.prefix}-jumpbox-subnet"
   resource_group_name  = azurerm_resource_group.k8s-resources.name
   virtual_network_name = azurerm_virtual_network.vnet.name
   address_prefixes     = ["10.0.2.0/24"]
@@ -38,6 +38,6 @@ resource "azurerm_network_security_rule" "nsg-inbound" {
 }
 
 resource "azurerm_subnet_network_security_group_association" "subnet-nsg" {
-  subnet_id                 = azurerm_subnet.subnet.id
+  subnet_id                 = azurerm_subnet.jumpbox-subnet.id
   network_security_group_id = azurerm_network_security_group.nsg.id
 }
